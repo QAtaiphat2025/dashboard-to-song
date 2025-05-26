@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Realtime</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f1f1;
+      padding: 30px;
+    }
+    h1 {
+      color: #2d82c8;
+    }
+    .box {
+      background-color: #fff;
+      border: 2px solid #2d82c8;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 600px;
+    }
+    .item {
+      font-size: 20px;
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #e6f0ff;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Lệnh đang sản xuất (Realtime)</h1>
+  <div class="box" id="lenh-list">
+    <div>Đang tải dữ liệu...</div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
+
+  <script>
+    // Cấu hình Firebase của bạn
+    const firebaseConfig = {
+      databaseURL: "https://qlsx-song-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    // Khởi tạo Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Lấy dữ liệu từ Firebase và hiển thị
+    const ref = db.ref("dashboard/lenh_dang_san_xuat");
+    const listDiv = document.getElementById("lenh-list");
+
+    ref.on("value", (snapshot) => {
+      const data = snapshot.val();
+      listDiv.innerHTML = "";
+      if (data && data.length > 0) {
+        data.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "item";
+          div.textContent = item;
+          listDiv.appendChild(div);
+        });
+      } else {
+        listDiv.innerHTML = "<div>Không có dữ liệu</div>";
+      }
+    });
+  </script>
+
+</body>
+</html>
