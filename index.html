@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Dashboard Sản Xuất</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -23,16 +21,15 @@
       border-radius: 4px;
       margin-bottom: 10px;
     }
-    .container {
+    .grid {
       display: grid;
-      grid-template-columns: 30% 35% 35%;
+      grid-template-columns: 30% 40% 30%;
       gap: 10px;
-      height: calc(100vh - 60px);
     }
     .box {
       border: 2px solid #000;
-      margin-bottom: 10px;
       background-color: #e8f0fc;
+      margin-bottom: 10px;
     }
     .title {
       background-color: #2d82c8;
@@ -42,22 +39,9 @@
       text-align: center;
       font-size: 18px;
     }
-    .sub-title {
-      background-color: #2d82c8;
-      color: white;
-      font-weight: bold;
-      text-align: center;
-      padding: 6px;
-    }
-    .data-row {
-      border: 1px solid #000;
-      padding: 5px 10px;
-      font-size: 16px;
-      font-weight: bold;
-    }
     .highlight {
       text-align: center;
-      font-size: 40px;
+      font-size: 32px;
       font-weight: bold;
       padding: 30px 10px;
       background-color: #cfe2f3;
@@ -66,27 +50,27 @@
       text-align: center;
       font-size: 22px;
       font-weight: bold;
-      padding: 20px 10px;
+      padding: 30px 10px;
       background-color: #cfe2f3;
     }
-    #charts {
-      height: 100%;
-      background: #f4f4f4;
-      padding: 10px;
-      overflow: auto;
+    .data-row {
+      border: 1px solid #000;
+      padding: 5px 10px;
+      font-size: 18px;
+      font-weight: bold;
     }
-    canvas {
-      width: 100% !important;
-      height: auto !important;
+    .chart-container {
+      width: 100%;
+      height: 300px;
+      padding: 10px;
     }
   </style>
 </head>
 <body>
-
   <div class="clock" id="clock">Đang tải thời gian...</div>
 
-  <div class="container">
-    <!-- Cột 1: Lệnh sản xuất -->
+  <div class="grid">
+    <!-- Cột trái -->
     <div>
       <div class="box">
         <div class="title">Lệnh đang sản xuất</div>
@@ -98,65 +82,42 @@
       </div>
     </div>
 
-    <!-- Cột 2: Thông tin phôi -->
+    <!-- Cột giữa -->
     <div>
       <div class="box">
         <div class="title">Thông tin phôi đang sản xuất</div>
-        <div id="phoi-hientai" class="data-row">Đang tải...</div>
+        <div id="phoi-hientai">Đang tải...</div>
       </div>
       <div class="box">
-        <div class="sub-title">Thông tin sản xuất phôi kế tiếp</div>
-        <div id="phoi-ke-tiep" class="data-row">Đang tải...</div>
+        <div class="title">Thông tin sản xuất phôi kế tiếp</div>
+        <div id="phoi-ke-tiep">Đang tải...</div>
       </div>
     </div>
 
-    <!-- Cột 3: Thống kê và biểu đồ -->
-    <div id="charts">
+    <!-- Cột phải -->
+    <div>
       <div class="box">
-        <div class="title">Tổng số phôi sản xuất hôm nay</div>
+        <div class="title">Tổng sản lượng phôi trong ngày</div>
         <div class="data-row" id="tong-phoi">Đang tải...</div>
         <div class="data-row" id="ca-a">Ca A: ...</div>
         <div class="data-row" id="ca-b">Ca B: ...</div>
       </div>
       <div class="box">
-        <div class="sub-title">Biểu đồ sản lượng</div>
-        <canvas id="chart"></canvas>
+        <div class="title">Tổng SL phôi hỏng trong ngày</div>
+        <div class="data-row" id="tong-hong">Đang tải...</div>
+        <div class="data-row" id="ca-a-hong">Ca A: ...</div>
+        <div class="data-row" id="ca-b-hong">Ca B: ...</div>
+      </div>
+      <div class="box chart-container">
+        <canvas id="chart-donut"></canvas>
+      </div>
+      <div class="box chart-container">
+        <canvas id="chart-bar"></canvas>
       </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script>
-    const firebaseConfig = {
-      databaseURL: "https://qlsx-song-default-rtdb.asia-southeast1.firebasedatabase.app"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    db.ref("dashboard/lenh_dang_san_xuat").once("value", snapshot => {
-      const data = snapshot.val();
-      document.getElementById("lenh-hientai").textContent = data[0] || "Không có dữ liệu";
-    });
-
-    db.ref("dashboard/lenh_sx_tiep").once("value", snapshot => {
-      const data = snapshot.val();
-      document.getElementById("lenh-ke-tiep").textContent = data[0] || "Không có dữ liệu";
-    });
-
-    db.ref("dashboard/thong_tin_phoi_hientai").once("value", snapshot => {
-      const data = snapshot.val();
-      const html = data.map(item => `<div class='data-row'>${item}</div>`).join("");
-      document.getElementById("phoi-hientai").innerHTML = html;
-    });
-
-    db.ref("dashboard/thong_tin_phoi_ketiep").once("value", snapshot => {
-      const data = snapshot.val();
-      const html = data.map(item => `<div class='data-row'>${item}</div>`).join("");
-      document.getElementById("phoi-ke-tiep").innerHTML = html;
-    });
-
     function updateClock() {
       const now = new Date();
       const timeStr = `Ngày ${now.getDate()}, tháng ${now.getMonth() + 1}, năm ${now.getFullYear()}, ${now.toLocaleTimeString('vi-VN')}`;
@@ -165,28 +126,44 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Tạo biểu đồ placeholder
-    const ctx = document.getElementById("chart").getContext("2d");
-    const myChart = new Chart(ctx, {
+    const barCtx = document.getElementById('chart-bar').getContext('2d');
+    new Chart(barCtx, {
       type: 'bar',
       data: {
         labels: ['Hôm kia', 'Hôm qua', 'Hôm nay'],
         datasets: [{
-          label: 'Số lượng phôi',
-          data: [0, 0, 0],
+          label: 'Sản lượng',
+          data: [41733, 25520, 54528],
           backgroundColor: '#2d82c8'
         }]
       },
       options: {
         responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true
-          }
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true }
+        }
+      }
+    });
+
+    const donutCtx = document.getElementById('chart-donut').getContext('2d');
+    new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Ca A', 'Ca B'],
+        datasets: [{
+          label: 'Phôi theo ca',
+          data: [53299, 1229],
+          backgroundColor: ['#2d82c8', '#f4a261']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
         }
       }
     });
   </script>
-
 </body>
 </html>
